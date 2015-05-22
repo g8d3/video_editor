@@ -1,19 +1,26 @@
 
-defs = {
-	c: :copy,
-	i: nil,
-}
 
 # split 'file.mkv', from: '1:00', to: '2:00'
 # split 'file.mkv', 60..120, 150..180
 def split(file, *times)
 	times.map do |time|
-		start, length, final = range_to_avconv time
-		
-		out = "#{base(file)}_#{start}_#{final}#{ext(file)}"
+		out = split_name file, time
 
-		"avconv -i #{file} -ss #{start} -t #{length} #{out}"
+		split_one file, time, out
 	end
+end
+	
+def split_one(file, time, out)
+	start, length, final = range_to_avconv time
+	"avconv -i #{file} -ss #{start} -t #{length} #{out}"
+end
+
+def split_name(file, start, final)
+	"#{base(file)}_#{start}_#{final}#{ext(file)}"
+end
+
+def merge_name(file, *times)
+	"#{base(file)}_#{times.join '_'}#{ext(file)}"
 end
 
 def base(file); file[/[^.]*/] end
@@ -33,10 +40,17 @@ def int_to_avconv(int)
 end
 
 def split!(file, *times)
-	split(file, *times).each do |part|
+	split(file, *times).map do |part|
 		puts part
 		system part
+		split_name
 	end
+end
+
+def merge(file, *times)
+	parts = split!(file, *times)
+	out   = merge_name(file, *times)
+	system "mkvmerge -o #{out} #{parts}"
 end
 
 p range_to_avconv 60..100
