@@ -1,4 +1,4 @@
-
+# TODO organize methods... too sleepy now
 
 # split 'file.mkv', from: '1:00', to: '2:00'
 # split 'file.mkv', 60..120, 150..180
